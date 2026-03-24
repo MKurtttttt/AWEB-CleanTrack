@@ -1,0 +1,72 @@
+<div class="map-container">
+  <div class="map-header">
+    <h1>Waste Report Map</h1>
+    <p>Visualizing waste issues across Malabanias</p>
+  </div>
+
+  <div class="map-content">
+    <div class="map-shell">
+      <div #mapContainer class="leaflet-map"></div>
+      <div class="map-legend">
+        <h3>Status Legend</h3>
+        <div class="legend-items">
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #f39c12;"></span>
+            <span>Pending</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #3498db;"></span>
+            <span>Assigned</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #9b59b6;"></span>
+            <span>In Progress</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #27ae60;"></span>
+            <span>Resolved</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #e74c3c;"></span>
+            <span>Rejected</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report List Sidebar -->
+    <div class="reports-sidebar">
+      <h3>Report Locations</h3>
+      
+      <div *ngIf="isLoading" class="loading">
+        <p>Loading reports...</p>
+      </div>
+
+      <div *ngIf="!isLoading && reports.length === 0" class="no-reports">
+        <p>No reports to display on map</p>
+      </div>
+
+      <div *ngIf="!isLoading && reports.length > 0" class="report-list">
+        <div 
+          *ngFor="let report of reports" 
+          class="report-item"
+          [class.selected]="selectedReportId === report.id"
+          (click)="onReportClick(report)"
+        >
+          <div class="report-marker" [style.backgroundColor]="getMarkerColor(report.status)"></div>
+          <div class="report-info">
+            <h4>{{ report.title }}</h4>
+            <p>{{ report.location.address || 'Location captured' }}</p>
+            <small>{{ report.reportedAt | date:'short' }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Controls -->
+  <div class="map-controls">
+    <button class="control-btn" (click)="refreshReports()">Refresh</button>
+    <button class="control-btn" (click)="centerMap()">Center Map</button>
+  </div>
+</div>

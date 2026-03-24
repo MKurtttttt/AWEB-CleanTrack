@@ -1,0 +1,60 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <h1>CleanTrack</h1>
+      <span class="tagline">Malabanias Waste Reporting</span>
+    </div>
+    
+    <div class="nav-menu">
+      <a 
+        [routerLink]="getReportRoute()" 
+        routerLinkActive="active"
+        class="nav-item"
+        [class.current]="isCurrentRoute(getReportRoute())"
+      >
+        <span class="nav-icon">Report</span>
+        <span class="nav-text">Report</span>
+      </a>
+      
+      <a 
+        [routerLink]="getDashboardRoute()" 
+        routerLinkActive="active"
+        class="nav-item"
+        [class.current]="isCurrentRoute(getDashboardRoute())"
+      >
+        <span class="nav-icon">Dashboard</span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      
+      <a 
+        [routerLink]="getMapRoute()" 
+        routerLinkActive="active"
+        class="nav-item"
+        [class.current]="isCurrentRoute(getMapRoute())"
+      >
+        <span class="nav-icon">Map</span>
+        <span class="nav-text">Map View</span>
+      </a>
+      
+      <a 
+        [routerLink]="getReportsRoute()" 
+        routerLinkActive="active"
+        class="nav-item"
+        [class.current]="isCurrentRoute(getReportsRoute())"
+      >
+        <span class="nav-icon">Reports</span>
+        <span class="nav-text">All Reports</span>
+      </a>
+      
+      <a 
+        [routerLink]="getNotificationsRoute()" 
+        routerLinkActive="active"
+        class="nav-item"
+        [class.current]="isCurrentRoute(getNotificationsRoute())"
+      >
+        <span class="nav-icon">Notifications</span>
+        <span class="nav-text">Notifications</span>
+      </a>
+    </div>
+  </div>
+</nav>

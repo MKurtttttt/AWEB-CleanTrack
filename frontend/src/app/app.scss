@@ -1,0 +1,26 @@
+:host {
+  font-family: 'DM Sans', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--dark);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 80px; /* Account for fixed navbar */
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 1rem;
+  }
+}

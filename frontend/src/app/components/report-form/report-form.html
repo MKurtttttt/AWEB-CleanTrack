@@ -1,0 +1,117 @@
+<div class="report-form-container">
+  <div class="form-header">
+    <h2>Report Waste Issue</h2>
+    <p>Help keep Malabanias clean by reporting waste issues in your area.</p>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" class="report-form">
+    <!-- Photo Upload Section -->
+    <div class="form-section">
+      <label class="section-title">Photo Evidence</label>
+      <div class="photo-upload">
+        <div class="upload-area" [class.has-image]="imagePreview">
+          <input 
+            type="file" 
+            accept="image/*" 
+            (change)="onFileSelected($event)"
+            #fileInput
+            style="display: none;"
+          >
+          <div *ngIf="!imagePreview" class="upload-placeholder" (click)="fileInput.click()">
+            <div class="upload-icon">Camera</div>
+            <p>Click to upload photo</p>
+            <small>Take a clear photo of the waste issue</small>
+          </div>
+          <div *ngIf="imagePreview" class="image-preview">
+            <img [src]="imagePreview" alt="Waste issue photo">
+            <button type="button" class="remove-image" (click)="imagePreview = null; selectedFile = null">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Basic Information -->
+    <div class="form-section">
+      <label class="section-title">Report Details</label>
+      
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input 
+          type="text" 
+          id="title" 
+          [(ngModel)]="report.title" 
+          name="title" 
+          placeholder="Brief description of the waste issue"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea 
+          id="description" 
+          [(ngModel)]="report.description" 
+          name="description" 
+          placeholder="Provide detailed information about the waste issue..."
+          rows="4"
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" [(ngModel)]="report.category" name="category">
+            <option *ngFor="let category of wasteCategories" [value]="category">
+              {{ getCategoryDisplayName(category) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="priority">Priority</label>
+          <select id="priority" [(ngModel)]="report.priority" name="priority">
+            <option *ngFor="let priority of priorities" [value]="priority">
+              {{ getPriorityDisplayName(priority) }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location Section -->
+    <div class="form-section">
+      <label class="section-title">Location</label>
+      
+      <div class="location-info">
+        <div *ngIf="report.location.latitude && report.location.longitude" class="location-display">
+          <strong>Current Location:</strong>
+          <p>{{ report.location.address || 'Location captured' }}</p>
+          <small>Lat: {{ report.location.latitude.toFixed(6) }}, Lng: {{ report.location.longitude.toFixed(6) }}</small>
+        </div>
+        
+        <button 
+          type="button" 
+          class="location-btn" 
+          (click)="getCurrentLocation()" 
+          [disabled]="isGettingLocation"
+        >
+          <span *ngIf="!isGettingLocation">Get My Location</span>
+          <span *ngIf="isGettingLocation">Getting location...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-actions">
+      <button 
+        type="submit" 
+        class="submit-btn" 
+        [disabled]="isSubmitting || !isFormValid()"
+      >
+        <span *ngIf="!isSubmitting">Submit Report</span>
+        <span *ngIf="isSubmitting">Submitting...</span>
+      </button>
+    </div>
+  </form>
+</div>

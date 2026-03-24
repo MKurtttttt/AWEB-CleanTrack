@@ -1,0 +1,45 @@
+<div class="report-list-container">
+  <div class="list-header">
+    <h1>All Waste Reports</h1>
+    <p>Complete list of waste issues reported in Malabanias</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading reports...</p>
+  </div>
+
+  <div *ngIf="!isLoading && reports.length === 0" class="no-reports">
+    <p>No reports submitted yet. Be the first to report a waste issue!</p>
+  </div>
+
+  <div *ngIf="!isLoading && reports.length > 0" class="reports-grid">
+    <div *ngFor="let report of reports" class="report-card">
+      <div class="report-header">
+        <h3>{{ report.title }}</h3>
+        <span class="status-badge">{{ getStatusDisplayName(report.status) }}</span>
+      </div>
+      
+      <div class="report-content">
+        <p class="description">{{ report.description }}</p>
+        
+        <div class="report-meta">
+          <div class="meta-item">
+            <strong>Category:</strong> {{ getCategoryDisplayName(report.category) }}
+          </div>
+          <div class="meta-item">
+            <strong>Priority:</strong> {{ report.priority }}
+          </div>
+          <div class="meta-item">
+            <strong>Reported:</strong> {{ report.reportedAt | date:'medium' }}
+          </div>
+          <div class="meta-item">
+            <strong>Location:</strong> {{ report.location.address || 'Location captured' }}
+          </div>
+          <div class="meta-item">
+            <strong>Reported by:</strong> {{ report.reportedBy }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
