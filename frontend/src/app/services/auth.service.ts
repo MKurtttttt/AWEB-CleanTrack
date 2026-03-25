@@ -143,15 +143,8 @@ export class AuthService {
   }
 
   private getApiUrl(): string {
-    // Check if we're in production and use fallback if needed
-    if (typeof window !== 'undefined' && 
-        window.location.hostname !== 'localhost' && 
-        window.location.hostname !== '127.0.0.1') {
-      // Production environment - use Render backend
-      return 'https://aweb-cleantrack.onrender.com/api';
-    }
-    // Development environment - use environment file
-    return environment.apiUrl;
+    // Always use Render backend for Netlify deployment
+    return 'https://aweb-cleantrack.onrender.com/api';
   }
 
   // Helper method to store user info
