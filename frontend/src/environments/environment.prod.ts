@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://cleantrack-backend.onrender.com/api'
+  apiUrl: 'https://aweb-cleantrack.onrender.com/api'
 };
