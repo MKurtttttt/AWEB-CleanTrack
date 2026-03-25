@@ -1,10 +1,10 @@
 # example netlify.toml
 
 [build]
-  # Install frontend dependencies, then run Angular build
-  command = "npm install && npm run build -- --configuration production"
-  functions = "netlify/functions"
-  publish = "dist/CleanTrack/browser"  # relative to frontend folder
+  base = "frontend"
+  command = "npm install --include=dev && npm run build -- --configuration production"
+  functions = "../netlify/functions"
+  publish = "dist/CleanTrack/browser"
 
 [build.environment]
   NODE_ENV = "production"
