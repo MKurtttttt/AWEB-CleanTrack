@@ -23,7 +23,7 @@ app.use(helmet());
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-production-domain.com'] 
+    ? [process.env.CORS_ORIGIN || 'https://adorable-ganache-db78b4.netlify.app'] 
     : ['http://localhost:4200', 'http://localhost:4201', 'http://localhost:4202'],
   credentials: true
 }));
