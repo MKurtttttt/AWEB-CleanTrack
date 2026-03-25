@@ -270,8 +270,6 @@ import { Router } from '@angular/router';
     </div>
   `,
   styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Satoshi:wght@300;400;500&display=swap');
- 
     :host {
       --green: #22c55e;
       --green-dim: #16a34a;
