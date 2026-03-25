@@ -1,11 +1,12 @@
 # example netlify.toml
 [build]
-  command = "cd frontend && NG_BUILD_ENV=production ng build --configuration production"
+  command = "cd frontend && ng build --configuration production"
   functions = "netlify/functions"
   publish = "frontend/dist/CleanTrack/browser"
 
 [build.environment]
   NODE_ENV = "production"
+  NG_APP_API_URL = "https://aweb-cleantrack.onrender.com/api"
 
 [[redirects]]
   from = "/*"
