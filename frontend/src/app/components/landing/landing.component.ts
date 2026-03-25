@@ -1,867 +1,1087 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ReportForm } from '../report-form/report-form';
-
+ 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, ReportForm],
+  imports: [CommonModule],
   template: `
-    <div class="landing-container">
-
+    <div class="landing">
+ 
       <!-- NAV -->
-      <nav class="navbar">
-        <a href="#" class="nav-logo">
-          <div class="logo-icon">🌿</div>
+      <nav class="nav">
+        <a class="nav-logo" href="#" (click)="$event.preventDefault()">
+          <span class="logo-leaf">✦</span>
           CleanTrack
         </a>
         <ul class="nav-links">
-          <li><a href="#how">How it works</a></li>
-          <li><a href="#report">Report</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="/login" class="nav-cta">Login</a></li>
+          <li><a href="#how" (click)="scrollToSection('how'); $event.preventDefault()">How it works</a></li>
+          <li><a href="#report" (click)="scrollToSection('report'); $event.preventDefault()">Report</a></li>
+          <li><a href="#features" (click)="scrollToSection('features'); $event.preventDefault()">Features</a></li>
+          <li><a href="/login" class="nav-btn">Login</a></li>
         </ul>
       </nav>
-
+ 
       <!-- HERO -->
       <section class="hero">
-        <div class="hero-badge">🌍 Community-Powered Cleanliness</div>
-        <h1>Your community<br>deserves to be <em>clean.</em></h1>
-        <p class="hero-sub">Report trash, illegal dumping, and waste in your neighborhood. CleanTrack routes your reports directly to City Hall for swift action.</p>
-        <div class="hero-actions">
-          <button class="btn-primary" (click)="goToReport()">📍 Report an Issue</button>
-          <a href="#how" class="btn-secondary">See how it works →</a>
-        </div>
-        <div class="hero-stats">
-          <div class="stat">
-            <div class="stat-num">1,<span>2</span>48</div>
-            <div class="stat-label">Reports filed</div>
+        <!-- Background grid -->
+        <div class="hero-grid"></div>
+        <!-- Glow orbs -->
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+ 
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            Community-Powered Cleanliness
           </div>
-          <div class="stat">
-            <div class="stat-num"><span>87</span>%</div>
-            <div class="stat-label">Resolved within 72h</div>
+ 
+          <h1 class="hero-title">
+            A cleaner future<br>
+            starts with <em>you.</em>
+          </h1>
+ 
+          <p class="hero-sub">
+            Empower your community to report, track, and resolve waste issues faster with intelligent tools.
+          </p>
+ 
+          <div class="hero-cta">
+            <button class="btn-primary" (click)="goToReport()">
+              <span class="btn-icon">▶</span>
+              Report Issue
+            </button>
+            <a href="#how" class="btn-ghost" (click)="scrollToSection('how'); $event.preventDefault()">Learn More</a>
           </div>
-          <div class="stat">
-            <div class="stat-num"><span>14</span></div>
-            <div class="stat-label">Barangays covered</div>
-          </div>
-        </div>
-
-        <!-- Floating Map Card -->
-        <div class="hero-visual">
-          <div class="map-card">
-            <div class="map-header">
-              <span class="map-title">Live Issue Map</span>
-              <span class="live-badge"><span class="live-dot"></span> Live</span>
+ 
+          <!-- Stats -->
+          <div class="hero-stats">
+            <div class="stat-card">
+              <div class="stat-num">1,200+</div>
+              <div class="stat-label">Reports</div>
             </div>
-            <div class="map-body">
-              <div class="map-pin pin-red" style="top:30%; left:30%">
-                <div class="pin-icon"><span>🗑️</span></div>
-                <div class="pin-label">Illegal dumping</div>
-              </div>
-              <div class="map-pin pin-yellow" style="top:55%; left:58%">
-                <div class="pin-icon"><span>♻️</span></div>
-                <div class="pin-label">Overflow bin</div>
-              </div>
-              <div class="map-pin pin-green" style="top:20%; left:65%">
-                <div class="pin-icon"><span>✅</span></div>
-                <div class="pin-label">Resolved</div>
-              </div>
-              <div class="map-pin pin-red" style="top:70%; left:22%">
-                <div class="pin-icon"><span>⚠️</span></div>
-                <div class="pin-label">Hazardous waste</div>
-              </div>
+            <div class="stat-card">
+              <div class="stat-num">85%</div>
+              <div class="stat-label">Resolved</div>
             </div>
-            <div class="map-report-list">
-              <div class="report-item">
-                <div class="report-dot" style="background:var(--danger)"></div>
-                <div class="report-info">
-                  <div class="report-name">Illegal Dumping</div>
-                  <div class="report-loc">📍 Rizal St. cor. Mabini Ave.</div>
-                </div>
-                <span class="report-status status-urgent">Urgent</span>
-              </div>
-              <div class="report-item">
-                <div class="report-dot" style="background:var(--warning)"></div>
-                <div class="report-info">
-                  <div class="report-name">Overflowing Bin</div>
-                  <div class="report-loc">📍 Magsaysay Market</div>
-                </div>
-                <span class="report-status status-pending">Pending</span>
-              </div>
-              <div class="report-item">
-                <div class="report-dot" style="background:var(--green-neon)"></div>
-                <div class="report-info">
-                  <div class="report-name">Scattered Litter</div>
-                  <div class="report-loc">📍 Plaza Complex</div>
-                </div>
-                <span class="report-status status-resolved">Resolved</span>
-              </div>
+            <div class="stat-card">
+              <div class="stat-num">24h</div>
+              <div class="stat-label">Response</div>
             </div>
           </div>
         </div>
       </section>
-
+ 
       <!-- HOW IT WORKS -->
       <section class="section" id="how">
-        <div class="section-label">Process</div>
-        <h2 class="section-title">From report to resolution in 3 steps</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">01</div>
-            <h3>Spot &amp; Report</h3>
-            <p>See trash or illegal dumping in your community? Fill out a quick report with the location, photos, and severity level. Takes less than 2 minutes.</p>
-          </div>
-          <div class="step">
-            <div class="step-num">02</div>
-            <h3>City Hall Review</h3>
-            <p>Your report is instantly sent to the City Hall sanitation dashboard. Staff triage and assign cleanup teams based on urgency and location.</p>
-          </div>
-          <div class="step">
-            <div class="step-num">03</div>
-            <h3>Track &amp; Resolve</h3>
-            <p>Get real-time updates on your report's status — from "Pending" to "In Progress" to "Resolved." Your reference ID keeps you in the loop.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- REPORT FORM -->
-      <section class="report-section" id="report">
-        <div class="report-grid">
-          <div class="report-intro">
-            <div class="section-label">Report an Issue</div>
-            <h2 class="section-title" style="font-size:2.2rem;">Help keep your<br>community clean</h2>
-            <p class="intro-body">Every report you file goes directly to the City Hall sanitation team. Your information is kept anonymous if preferred. Together, we can build a cleaner, healthier city.</p>
-            <div class="intro-checklist">
-              <div class="check-item"><span class="check-icon">✓</span> Reports reviewed within 24 hours</div>
-              <div class="check-item"><span class="check-icon">✓</span> Real-time status tracking</div>
-              <div class="check-item"><span class="check-icon">✓</span> Anonymous reporting available</div>
-              <div class="check-item"><span class="check-icon">✓</span> Photo evidence supported</div>
+        <div class="section-inner">
+          <div class="section-label">Process</div>
+          <h2 class="section-title">From report to resolution<br>in 3 steps</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">01</div>
+              <h3>Spot &amp; Report</h3>
+              <p>See trash or illegal dumping? Fill out a quick report with the location, photos, and severity level. Takes less than 2 minutes.</p>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step">
+              <div class="step-num">02</div>
+              <h3>City Hall Review</h3>
+              <p>Your report is instantly sent to the City Hall sanitation dashboard. Staff triage and assign cleanup teams based on urgency.</p>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step">
+              <div class="step-num">03</div>
+              <h3>Track &amp; Resolve</h3>
+              <p>Get real-time updates on your report's status — from Pending to In Progress to Resolved. Your reference ID keeps you in the loop.</p>
             </div>
           </div>
+        </div>
+      </section>
+ 
+      <!-- REPORT SECTION -->
+      <section class="report-section" id="report">
+        <div class="section-inner report-grid">
+          <div class="report-intro">
+            <div class="section-label">Report an Issue</div>
+            <h2 class="section-title">Help keep your<br>community clean</h2>
+            <p class="report-desc">Follow these simple steps to report waste issues in your area. Every report makes a difference!</p>
+            <div class="checklist">
+              <div class="check-item"><span class="check">✓</span> Reports reviewed within 24 hours</div>
+              <div class="check-item"><span class="check">✓</span> Real-time status tracking</div>
+              <div class="check-item"><span class="check">✓</span> Anonymous reporting available</div>
+              <div class="check-item"><span class="check">✓</span> Photo evidence supported</div>
+            </div>
+          </div>
+          <div class="report-guide">
+            <div class="step-guide">
+              <h3 class="guide-title">How to Report an Issue</h3>
+              
+              <div class="guide-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <h4>Sign In or Report Anonymously</h4>
+                  <p>Choose to create an account for tracking or submit anonymously for privacy.</p>
+                  <button class="step-btn" (click)="goToLogin()">
+                    <span class="btn-icon">👤</span>
+                    Sign In to Report
+                  </button>
+                </div>
+              </div>
 
-          <div class="report-form">
-            <app-report-form></app-report-form>
+              <div class="guide-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <h4>Describe the Issue</h4>
+                  <p>Provide details about the waste problem - type, severity, and any important information.</p>
+                  <div class="step-preview">
+                    <div class="preview-field">
+                      <span class="field-label">Issue Type:</span>
+                      <span class="field-value">Illegal Dumping</span>
+                    </div>
+                    <div class="preview-field">
+                      <span class="field-label">Severity:</span>
+                      <span class="field-value">High</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="guide-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <h4>Add Location</h4>
+                  <p>Pin the exact location on the map or enter the address where the issue is located.</p>
+                  <div class="step-preview">
+                    <div class="map-preview">
+                      <div class="preview-map">
+                        <div class="preview-pin">📍</div>
+                        <span class="map-text">Click to set location</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="guide-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                  <h4>Upload Photos</h4>
+                  <p>Take clear photos of the waste issue to help authorities understand the problem better.</p>
+                  <div class="step-preview">
+                    <div class="photo-preview">
+                      <div class="preview-photo">
+                        <span class="photo-icon">📷</span>
+                        <span class="photo-text">Add photos</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="guide-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                  <h4>Submit & Track</h4>
+                  <p>Submit your report and get a reference number to track the cleanup progress.</p>
+                  <div class="step-preview">
+                    <div class="submit-preview">
+                      <div class="reference-number">
+                        <span class="ref-label">Reference:</span>
+                        <span class="ref-value">#CT-2024-001</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="guide-cta">
+                <button class="btn-primary" (click)="goToLogin()">
+                  <span class="btn-icon">▶</span>
+                  Start Reporting Now
+                </button>
+                <p class="cta-note">Join hundreds of residents making their community cleaner!</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
+ 
       <!-- FEATURES -->
       <section class="section" id="features">
-        <div class="section-label">Features</div>
-        <h2 class="section-title">Everything your community needs</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🗺️</div>
-            <h3>Interactive Issue Map</h3>
-            <p>See all active reports plotted on a live map of your city. Color-coded pins show severity at a glance — red for urgent, yellow for pending, green for resolved.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔔</div>
-            <h3>Real-Time Status Updates</h3>
-            <p>Get notified by email or SMS when your report status changes. Know exactly when City Hall receives, reviews, and resolves your issue.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>City Hall Analytics</h3>
-            <p>Administrators access powerful dashboards showing report trends, hotspot barangays, team performance metrics, and resolution time analytics.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>Mobile-First Design</h3>
-            <p>Report issues from anywhere — CleanTrack is fully optimized for mobile. Snap a photo, drop a pin, and submit in under 2 minutes, right from the scene.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <h3>Anonymous Reporting</h3>
-            <p>Concerned about privacy? Submit reports without sharing personal details. We protect community members who speak up about waste issues.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🤝</div>
-            <h3>Team Assignment</h3>
-            <p>City Hall can assign reports to specific cleanup crews, set priorities, add internal notes, and track resolution progress — all in one place.</p>
+        <div class="section-inner">
+          <div class="section-label">Features</div>
+          <h2 class="section-title">Everything your<br>community needs</h2>
+          <div class="features-grid">
+            <div class="feature">
+              <div class="feature-icon">🗺️</div>
+              <h3>Live Issue Map</h3>
+              <p>See all active reports on a live map. Color-coded pins show severity at a glance.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">🔔</div>
+              <h3>Real-Time Updates</h3>
+              <p>Get notified when your report status changes. Know exactly when City Hall acts.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">📊</div>
+              <h3>Analytics Dashboard</h3>
+              <p>Administrators access powerful dashboards showing trends, hotspots, and metrics.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">📱</div>
+              <h3>Mobile-First</h3>
+              <p>Report issues from anywhere. Snap a photo, drop a pin, submit in under 2 minutes.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">🔒</div>
+              <h3>Anonymous Reports</h3>
+              <p>Submit without sharing personal details. We protect community members who speak up.</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">🤝</div>
+              <h3>Team Assignment</h3>
+              <p>City Hall assigns reports to cleanup crews, sets priorities, tracks resolution progress.</p>
+            </div>
           </div>
         </div>
       </section>
-
+ 
       <!-- CTA -->
       <section class="cta-section">
-        <div class="cta-box">
-          <div class="hero-badge" style="margin:0 auto 20px;">🌿 Start Today — It's Free</div>
-          <h2>A cleaner community starts with <em style="color:var(--green-neon);font-style:normal;">you.</em></h2>
-          <p>Join hundreds of residents already making their barangay cleaner. Every report you file brings us one step closer to a healthier city.</p>
+        <div class="cta-orb"></div>
+        <div class="cta-inner">
+          <div class="section-label" style="text-align:center;margin-bottom:24px;">Start Today — It's Free</div>
+          <h2 class="cta-title">A cleaner community<br>starts with <em>you.</em></h2>
+          <p class="cta-sub">Join hundreds of residents already making their barangay cleaner. Every report brings us one step closer to a healthier city.</p>
           <div class="cta-actions">
-            <button class="btn-primary" (click)="goToReport()">📍 Report an Issue Now</button>
-            <button class="btn-secondary" (click)="goToLogin()">🏛️ Login →</button>
+            <button class="btn-primary" (click)="goToReport()">▶ Report an Issue Now</button>
+            <button class="btn-ghost" (click)="goToLogin()">Login →</button>
           </div>
         </div>
       </section>
-
+ 
       <!-- FOOTER -->
       <footer class="footer">
-        <div class="footer-logo">Clean<span>Track</span> <span class="footer-sub">Community Cleanliness Reporter</span></div>
-        <div>Made for cleaner communities 🌿</div>
-        <div>© 2026 CleanTrack</div>
+        <div class="footer-logo">Clean<span>Track</span></div>
+        <div class="footer-copy">Made for cleaner communities ✦ © 2026 CleanTrack</div>
       </footer>
-
+ 
     </div>
   `,
   styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
-
+    @import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Satoshi:wght@300;400;500&display=swap');
+ 
     :host {
-      --green: #1a7a4a;
-      --green-mid: #25a366;
-      --green-neon: #39e07a;
-      --dark: #0d1f14;
-      --dark-2: #162a1e;
-      --text: #e8f0eb;
-      --text-muted: #8aab97;
-      --white: #f9fdf9;
-      --danger: #e85c3a;
-      --warning: #f0a500;
-      --radius: 16px;
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --green-glow: rgba(34,197,94,0.15);
+      --green-glow-strong: rgba(34,197,94,0.25);
+      --dark: #050f08;
+      --dark-2: #0a1a0f;
+      --dark-3: #0f2318;
+      --surface: #0d1f13;
+      --border: rgba(34,197,94,0.12);
+      --border-hover: rgba(34,197,94,0.3);
+      --text: #e2ede6;
+      --text-muted: #6b8f76;
+      --white: #f0faf3;
     }
-
-    /* ── GLOBAL ── */
-    .landing-container {
-      font-family: 'DM Sans', sans-serif;
+ 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    .landing {
+      font-family: 'Satoshi', sans-serif;
       background: var(--dark);
       color: var(--text);
       overflow-x: hidden;
       min-height: 100vh;
-      position: relative;
     }
-
+ 
     /* ── NAV ── */
-    .navbar {
+    .nav {
       position: fixed;
       top: 0; left: 0; right: 0;
-      z-index: 200;
+      z-index: 100;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 20px 48px;
-      background: rgba(13, 31, 20, 0.85);
-      backdrop-filter: blur(24px);
-      border-bottom: 1px solid rgba(57, 224, 122, 0.08);
+      background: rgba(5,15,8,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
-
+ 
     .nav-logo {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-family: 'Syne', sans-serif;
+      gap: 8px;
+      font-family: 'Cabinet Grotesk', sans-serif;
       font-weight: 800;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       color: var(--white);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
-
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--green-neon), var(--green));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
+ 
+    .logo-leaf {
+      color: var(--green);
+      font-size: 1rem;
     }
-
+ 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 36px;
+      gap: 32px;
       list-style: none;
-      margin: 0; padding: 0;
     }
-
+ 
     .nav-links a {
       color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 500;
-      letter-spacing: 0.02em;
       transition: color 0.2s;
     }
-
-    .nav-links a:hover { color: var(--green-neon); }
-
-    .nav-cta {
-      background: var(--green-neon) !important;
-      color: var(--dark) !important;
-      padding: 10px 22px;
-      border-radius: 50px;
-      font-weight: 600 !important;
-      transition: transform 0.2s, box-shadow 0.2s !important;
+ 
+    .nav-links a:hover { color: var(--green); }
+ 
+    .nav-btn {
+      background: var(--green) !important;
+      color: #050f08 !important;
+      padding: 9px 22px;
+      border-radius: 100px;
+      font-weight: 700 !important;
+      font-size: 0.85rem !important;
+      transition: box-shadow 0.2s, transform 0.2s !important;
+      text-decoration: none;
     }
-
-    .nav-cta:hover {
+ 
+    .nav-btn:hover {
+      box-shadow: 0 0 24px var(--green-glow-strong) !important;
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(57, 224, 122, 0.35) !important;
+      color: #050f08 !important;
     }
-
+ 
     /* ── HERO ── */
     .hero {
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 120px 48px 80px;
       position: relative;
+      padding: 120px 48px 80px;
+      text-align: center;
+      overflow: hidden;
     }
-
+ 
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(34,197,94,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34,197,94,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+ 
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+ 
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      animation: orb-float 8s ease-in-out infinite;
+    }
+ 
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%);
+      bottom: 0; left: -80px;
+      animation: orb-float 10s ease-in-out infinite reverse;
+    }
+ 
+    @keyframes orb-float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-30px); }
+    }
+ 
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+      animation: fade-up 0.8s ease both;
+    }
+ 
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+ 
     .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(57, 224, 122, 0.1);
-      border: 1px solid rgba(57, 224, 122, 0.25);
-      color: var(--green-neon);
-      padding: 8px 16px;
-      border-radius: 50px;
-      font-size: 0.8rem;
+      background: rgba(34,197,94,0.08);
+      border: 1px solid var(--border);
+      color: var(--green);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      width: fit-content;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
     }
-
-    .hero h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(3.2rem, 7vw, 6.5rem);
-      font-weight: 800;
+ 
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+ 
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+ 
+    .hero-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(3.5rem, 8vw, 6.5rem);
+      font-weight: 900;
       line-height: 1.0;
-      letter-spacing: -0.03em;
-      max-width: 900px;
+      letter-spacing: -0.04em;
+      color: var(--white);
+      margin-bottom: 24px;
     }
-
-    .hero h1 em { font-style: normal; color: var(--green-neon); }
-
+ 
+    .hero-title em {
+      font-style: normal;
+      color: var(--green);
+      position: relative;
+    }
+ 
     .hero-sub {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       color: var(--text-muted);
       max-width: 520px;
       line-height: 1.7;
-      margin-top: 24px;
-      font-weight: 300;
+      margin: 0 auto 40px;
+      font-weight: 400;
     }
-
-    .hero-actions {
+ 
+    .hero-cta {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 16px;
-      margin-top: 40px;
+      margin-bottom: 72px;
     }
-
+ 
+    /* ── STATS ── */
     .hero-stats {
       display: flex;
-      gap: 48px;
-      margin-top: 72px;
-      padding-top: 40px;
-      border-top: 1px solid rgba(255,255,255,0.07);
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
     }
-
+ 
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 40px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s;
+      min-width: 150px;
+    }
+ 
+    .stat-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+    }
+ 
     .stat-num {
-      font-family: 'Syne', sans-serif;
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--white);
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--green);
+      letter-spacing: -0.03em;
       line-height: 1;
+      margin-bottom: 6px;
     }
-
-    .stat-num span { color: var(--green-neon); }
-
+ 
     .stat-label {
       font-size: 0.8rem;
       color: var(--text-muted);
-      margin-top: 4px;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
-
-    /* ── FLOATING MAP CARD ── */
-    .hero-visual {
-      position: absolute;
-      right: 48px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 420px;
-    }
-
-    .map-card {
-      background: var(--dark-2);
-      border: 1px solid rgba(57, 224, 122, 0.15);
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-    }
-
-    .map-header {
-      padding: 16px 20px;
-      display: flex;
+ 
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .map-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.7rem;
-      color: var(--green-neon);
-      font-weight: 600;
-    }
-
-    .live-dot {
-      width: 6px; height: 6px;
-      background: var(--green-neon);
-      border-radius: 50%;
-    }
-
-    .map-body {
-      height: 240px;
-      background:
-        linear-gradient(rgba(57,224,122,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(57,224,122,0.03) 1px, transparent 1px);
-      background-size: 30px 30px;
-      background-color: #101d15;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .map-body::before {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        linear-gradient(rgba(57,224,122,0.08) 2px, transparent 2px),
-        linear-gradient(90deg, rgba(57,224,122,0.08) 2px, transparent 2px);
-      background-size: 90px 90px;
-      background-position: 45px 45px;
-    }
-
-    .map-pin {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      gap: 8px;
+      background: var(--green);
+      color: #050f08;
+      padding: 15px 32px;
+      border-radius: 100px;
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: box-shadow 0.2s, transform 0.2s;
+      letter-spacing: -0.01em;
     }
-
-    .map-pin:hover { transform: translateY(-4px); }
-
-    .pin-icon {
-      width: 32px; height: 32px;
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
+ 
+    .btn-primary:hover {
+      box-shadow: 0 0 32px var(--green-glow-strong);
+      transform: translateY(-2px);
     }
-
-    .pin-icon span { transform: rotate(45deg); display: block; }
-
-    .pin-red .pin-icon    { background: var(--danger);   box-shadow: 0 4px 16px rgba(232,92,58,0.5); }
-    .pin-yellow .pin-icon { background: var(--warning);  box-shadow: 0 4px 16px rgba(240,165,0,0.5); }
-    .pin-green .pin-icon  { background: var(--green-neon); box-shadow: 0 4px 16px rgba(57,224,122,0.5); }
-
-    .pin-label {
-      margin-top: 4px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      font-size: 0.65rem;
-      padding: 2px 8px;
-      border-radius: 50px;
-      white-space: nowrap;
-      font-weight: 500;
+ 
+    .btn-icon { font-size: 0.7rem; }
+ 
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      color: var(--text);
+      padding: 15px 28px;
+      border-radius: 100px;
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
     }
-
-    .map-report-list {
-      padding: 16px;
+ 
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.04);
+    }
+ 
+    /* ── SECTIONS ── */
+    .section {
+      padding: 100px 0;
+    }
+ 
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+ 
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+ 
+    .section-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 60px;
+    }
+ 
+    /* ── STEPS ── */
+    .steps {
       display: flex;
-      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+ 
+    .step {
+      flex: 1;
+      padding: 40px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+ 
+    .step:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+    }
+ 
+    .step-divider {
+      width: 40px;
+      flex-shrink: 0;
+      height: 1px;
+      background: var(--border);
+      margin-top: 60px;
+      align-self: flex-start;
+    }
+ 
+    .step-num {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
-
-    .report-item {
+ 
+    .step-num::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      display: block;
+    }
+ 
+    .step h3 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+ 
+    .step p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-weight: 400;
+    }
+ 
+    /* ── REPORT SECTION ── */
+    .report-section {
+      padding: 100px 0;
+      background: var(--dark-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+ 
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 80px;
+      align-items: start;
+    }
+ 
+    .report-intro .section-title { margin-bottom: 20px; }
+ 
+    .report-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+ 
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+ 
+    .check-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.05);
-      transition: border-color 0.2s;
-    }
-
-    .report-item:hover { border-color: rgba(57,224,122,0.2); }
-
-    .report-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .report-info { flex: 1; }
-    .report-name { font-size: 0.8rem; font-weight: 500; }
-    .report-loc  { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
-
-    .report-status {
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 50px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .status-pending  { background: rgba(240,165,0,0.15);  color: var(--warning); }
-    .status-resolved { background: rgba(57,224,122,0.12); color: var(--green-neon); }
-    .status-urgent   { background: rgba(232,92,58,0.12);  color: var(--danger); }
-
-    /* ── SECTIONS ── */
-    .section { padding: 100px 48px; }
-
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--green-neon);
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      max-width: 600px;
-    }
-
-    /* ── STEPS ── */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-top: 60px;
-      position: relative;
-    }
-
-    .steps::before {
-      content: '';
-      position: absolute;
-      top: 36px; left: calc(16.6% + 24px); right: calc(16.6% + 24px);
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(57,224,122,0.3) 20%, rgba(57,224,122,0.3) 80%, transparent);
-    }
-
-    .step {
-      background: var(--dark-2);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius);
-      padding: 32px;
-      transition: border-color 0.3s, transform 0.3s;
-    }
-
-    .step:hover { border-color: rgba(57,224,122,0.2); transform: translateY(-4px); }
-
-    .step-num {
-      width: 48px; height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--green), var(--dark-2));
-      border: 1px solid rgba(57,224,122,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--green-neon);
-      margin-bottom: 20px;
-    }
-
-    .step h3 { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
-    .step p  { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
-
-    /* ── REPORT SECTION ── */
-    .report-section {
-      padding: 80px 48px;
-      background: var(--dark-2);
-      position: relative;
-    }
-
-    .report-grid {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 64px;
-      align-items: start;
-      max-width: 1100px;
-    }
-
-    .intro-body {
+      font-size: 0.875rem;
       color: var(--text-muted);
-      font-size: 0.92rem;
-      line-height: 1.7;
-      margin-top: 20px;
     }
-
-    .intro-checklist { margin-top: 36px; display: flex; flex-direction: column; gap: 14px; }
-
-    .check-item { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; color: var(--text-muted); }
-    .check-icon { color: var(--green-neon); font-size: 1.1rem; }
-
-    .report-form {
-      background: var(--dark);
-      border: 1px solid rgba(255,255,255,0.07);
+ 
+    .check {
+      color: var(--green);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+ 
+    /* Step Guide Styles */
+    .report-guide {
+      background: var(--dark-3);
+      border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 36px;
+      padding: 40px;
+      overflow: hidden;
     }
-
-    .form-title {
-      font-family: 'Syne', sans-serif;
+ 
+    .guide-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
       font-size: 1.3rem;
       font-weight: 700;
-      margin-bottom: 28px;
+      color: var(--white);
+      margin-bottom: 32px;
+      text-align: center;
+    }
+ 
+    .guide-step {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+ 
+    .guide-step:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+ 
+    .step-number {
+      width: 40px;
+      height: 40px;
+      background: var(--green);
+      color: var(--dark);
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      flex-shrink: 0;
     }
-
-    .form-title-icon {
-      width: 36px; height: 36px;
-      background: rgba(57,224,122,0.12);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-    }
-
-    .form-group { margin-bottom: 20px; }
-
-    .form-label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .form-input, .form-select, .form-textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 13px 16px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .form-input:focus, .form-select:focus, .form-textarea:focus {
-      border-color: rgba(57,224,122,0.4);
-      box-shadow: 0 0 0 3px rgba(57,224,122,0.08);
-    }
-
-    .form-input::placeholder, .form-textarea::placeholder { color: rgba(138,171,151,0.5); }
-    .form-select option { background: var(--dark-2); }
-    .form-textarea { resize: vertical; min-height: 100px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    .upload-zone {
-      border: 2px dashed rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 28px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-    }
-
-    .upload-zone:hover {
-      border-color: rgba(57,224,122,0.35);
-      background: rgba(57,224,122,0.03);
-    }
-
-    .upload-icon { font-size: 2rem; margin-bottom: 8px; }
-    .upload-text { font-size: 0.85rem; color: var(--text-muted); }
-    .upload-text strong { color: var(--green-neon); }
-
-    .severity-picker { display: flex; gap: 10px; }
-
-    .severity-opt {
+ 
+    .step-content {
       flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.08);
-      text-align: center;
+    }
+ 
+    .step-content h4 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+ 
+    .step-content p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+ 
+    .step-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green);
+      color: var(--dark);
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+ 
+    .step-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(57, 224, 122, 0.3);
+    }
+ 
+    .step-preview {
+      margin-top: 12px;
+    }
+ 
+    .preview-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+    }
+ 
+    .field-label {
       font-size: 0.8rem;
+      color: var(--text-muted);
       font-weight: 500;
     }
-
-    .sev-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
-
-    .severity-opt.low    { color: var(--green-neon); }
-    .severity-opt.medium { color: var(--warning); }
-    .severity-opt.high   { color: var(--danger); }
-
-    .severity-opt.low.active,    .severity-opt.low:hover    { background: rgba(57,224,122,0.1); border-color: rgba(57,224,122,0.35); }
-    .severity-opt.medium.active, .severity-opt.medium:hover { background: rgba(240,165,0,0.1);  border-color: rgba(240,165,0,0.35); }
-    .severity-opt.high.active,   .severity-opt.high:hover   { background: rgba(232,92,58,0.1);  border-color: rgba(232,92,58,0.35); }
-
-    .submit-btn { width: 100%; justify-content: center; border-radius: 12px; }
-
+ 
+    .field-value {
+      font-size: 0.85rem;
+      color: var(--green);
+      font-weight: 600;
+    }
+ 
+    .preview-map {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+ 
+    .preview-map {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+ 
+    .preview-pin {
+      font-size: 1.2rem;
+      margin-right: 8px;
+    }
+ 
+    .map-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+ 
+    .preview-photo {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+ 
+    .photo-icon {
+      font-size: 1.2rem;
+      margin-right: 8px;
+    }
+ 
+    .photo-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+ 
+    .reference-number {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+ 
+    .ref-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+ 
+    .ref-value {
+      font-size: 0.9rem;
+      color: var(--green);
+      font-weight: 700;
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+ 
+    .guide-cta {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+ 
+    .guide-cta .btn-primary {
+      margin-bottom: 16px;
+    }
+ 
+    .cta-note {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0;
+    }
+ 
     /* ── FEATURES ── */
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-      margin-top: 56px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
     }
-
-    .feature-card {
-      background: var(--dark-2);
-      border: 1px solid rgba(255,255,255,0.06);
+ 
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 20px;
       padding: 32px;
       transition: border-color 0.3s, transform 0.3s;
       position: relative;
       overflow: hidden;
     }
-
-    .feature-card::before {
+ 
+    .feature::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(57,224,122,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(34,197,94,0.4), transparent);
       opacity: 0;
       transition: opacity 0.3s;
     }
-
-    .feature-card:hover { border-color: rgba(57,224,122,0.15); transform: translateY(-3px); }
-    .feature-card:hover::before { opacity: 1; }
-
-    .feature-icon {
-      width: 52px; height: 52px;
-      border-radius: 14px;
-      background: rgba(57,224,122,0.08);
-      border: 1px solid rgba(57,224,122,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+ 
+    .feature:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
     }
-
-    .feature-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 10px; }
-    .feature-card p  { font-size: 0.87rem; color: var(--text-muted); line-height: 1.65; }
-
+ 
+    .feature:hover::before { opacity: 1; }
+ 
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+ 
+    .feature h3 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+ 
+    .feature p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+ 
     /* ── CTA ── */
     .cta-section {
-      padding: 80px 48px 120px;
+      padding: 120px 48px;
       text-align: center;
       position: relative;
+      overflow: hidden;
     }
-
-    .cta-box { max-width: 640px; margin: 0 auto; }
-
-    .cta-box h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 800;
-      margin-bottom: 16px;
-      line-height: 1.1;
+ 
+    .cta-orb {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(34,197,94,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
     }
-
-    .cta-box p { color: var(--text-muted); font-size: 1rem; margin-bottom: 36px; line-height: 1.6; }
-    .cta-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-
-    /* ── BUTTONS ── */
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--green-neon);
-      color: var(--dark);
-      padding: 16px 32px;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      text-decoration: none;
-      border: none; cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      font-family: 'DM Sans', sans-serif;
+ 
+    .cta-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 640px;
+      margin: 0 auto;
     }
-
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(57, 224, 122, 0.4); }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: transparent;
-      color: var(--text);
-      padding: 16px 32px;
-      border-radius: 50px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,0.15);
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      font-family: 'DM Sans', sans-serif;
+ 
+    .cta-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--white);
+      margin-bottom: 20px;
     }
-
-    .btn-secondary:hover { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.05); }
-
+ 
+    .cta-title em { font-style: normal; color: var(--green); }
+ 
+    .cta-sub {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.65;
+      margin-bottom: 40px;
+    }
+ 
+    .cta-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+ 
     /* ── FOOTER ── */
     .footer {
-      border-top: 1px solid rgba(255,255,255,0.06);
       padding: 40px 48px;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.82rem;
+    }
+ 
+    .footer-logo {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+ 
+    .footer-logo span { color: var(--green); }
+ 
+    .footer-copy {
+      font-size: 0.8rem;
       color: var(--text-muted);
     }
-
-    .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--white); font-size: 1rem; }
-    .footer-logo span { color: var(--green-neon); }
-    .footer-sub { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); margin-left: 8px; }
-
+ 
     /* ── RESPONSIVE ── */
-    @media (max-width: 1100px) { .hero-visual { display: none; } }
-
-    @media (max-width: 900px) {
-      .navbar { padding: 16px 24px; }
-      .nav-links { display: none; }
-      .hero { padding: 100px 24px 60px; }
-      .section, .report-section, .cta-section { padding: 64px 24px; }
-      .steps { grid-template-columns: 1fr; }
-      .steps::before { display: none; }
+    @media (max-width: 1024px) {
+      .steps { flex-direction: column; gap: 16px; }
+      .step-divider { display: none; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
       .report-grid { grid-template-columns: 1fr; }
+    }
+ 
+    @media (max-width: 768px) {
+      .nav { padding: 16px 24px; }
+      .nav-links { gap: 20px; }
+      .nav-links li:not(:last-child) { display: none; }
+      .hero { padding: 100px 24px 60px; }
+      .section { padding: 64px 0; }
+      .section-inner { padding: 0 24px; }
       .features-grid { grid-template-columns: 1fr; }
-      .hero-stats { gap: 28px; flex-wrap: wrap; }
-      .footer { flex-direction: column; gap: 16px; text-align: center; }
+      .cta-section { padding: 80px 24px; }
+      .footer { flex-direction: column; gap: 12px; text-align: center; padding: 32px 24px; }
     }
   `]
 })
 export class LandingComponent {
   constructor(private router: Router) {}
-
-  goToReport() {
-    this.router.navigate(['/login']);
+ 
+  goToReport() { 
+    // Navigate to login first, then user can report
+    this.router.navigate(['/login']); 
   }
-
-  goToLogin() {
-    this.router.navigate(['/login']);
+  
+  goToLogin() { 
+    this.router.navigate(['/login']); 
+  }
+  
+  scrollToSection(sectionId: string) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }

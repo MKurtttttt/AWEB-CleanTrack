@@ -16,7 +16,7 @@
     <div *ngFor="let report of reports" class="report-card">
       <div class="report-header">
         <h3>{{ report.title }}</h3>
-        <span class="status-badge">{{ getStatusDisplayName(report.status) }}</span>
+        <span class="status-badge" [ngClass]="getStatusClass(report.status)">{{ getStatusDisplayName(report.status) }}</span>
       </div>
       
       <div class="report-content">
@@ -24,19 +24,30 @@
         
         <div class="report-meta">
           <div class="meta-item">
-            <strong>Category:</strong> {{ getCategoryDisplayName(report.category) }}
+            <strong>Category</strong>
+            {{ getCategoryDisplayName(report.category) }}
           </div>
           <div class="meta-item">
-            <strong>Priority:</strong> {{ report.priority }}
+            <strong>Priority</strong>
+            <span class="priority-indicator" [ngClass]="getPriorityClass(report.priority)">
+              {{ report.priority }}
+            </span>
           </div>
           <div class="meta-item">
-            <strong>Reported:</strong> {{ report.reportedAt | date:'medium' }}
+            <strong>Reported</strong>
+            {{ report.reportedAt | date:'medium' }}
           </div>
           <div class="meta-item">
-            <strong>Location:</strong> {{ report.location.address || 'Location captured' }}
+            <strong>Location</strong>
+            {{ report.location.address || 'Location captured' }}
           </div>
           <div class="meta-item">
-            <strong>Reported by:</strong> {{ report.reportedBy }}
+            <strong>Reported by</strong>
+            {{ report.reportedBy }}
+          </div>
+          <div class="meta-item">
+            <strong>Barangay</strong>
+            {{ report.location.barangay || 'Not specified' }}
           </div>
         </div>
       </div>

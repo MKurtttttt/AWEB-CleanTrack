@@ -791,57 +791,73 @@ export class ReportForm {
   }
 
   onSubmit(): void {
-    if (!this.isFormValid()) return;
-
-    this.isSubmitting = true;
-    this.submitError = '';
-    this.successMessage = '';
-
-    // Create form data for file upload
-    const formData = new FormData();
-    formData.append('title', this.report.title);
-    formData.append('description', this.report.description);
-    formData.append('category', this.report.category);
-    formData.append('priority', this.mapSeverityToPriority(this.report.severity));
-    formData.append('location[latitude]', '15.1474');
-    formData.append('location[longitude]', '120.5957');
-    formData.append('location[address]', `${this.report.houseNumber} ${this.report.street}, ${this.report.barangay}`);
-    formData.append('location[barangay]', this.report.barangay);
-    formData.append('location[city]', 'Angeles City');
-    
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile);
-    }
-
-    this.reportService.createReport(formData).pipe(
-      timeout(15000),
-      finalize(() => {
-        this.isSubmitting = false;
-      })
-    ).subscribe({
-      next: (response: any) => {
-        this.isSubmitting = false;
-        this.reportId = response._id || response.id || Date.now().toString();
-        this.successMessage = `Report submitted successfully! Reference ID: #${this.reportId}`;
-        this.showSuccessModal = true;
-        
-        // Show success message for 3 seconds, then navigate
-        setTimeout(() => {
-          this.showSuccessModal = false;
-          this.resetForm();
-          this.router.navigate(['/resident/reports']);
-        }, 3000);
-      },
-      error: (error) => {
-        console.error('Report submission error:', error);
-        this.submitError = error?.error?.message || error?.message || 'Error submitting report. Please try again.';
-        // Clear error after 5 seconds
-        setTimeout(() => {
-          this.submitError = '';
-        }, 5000);
-      }
-    });
+  if (!this.isFormValid()) {
+    this.submitError = 'Please fill in all required fields (description needs 10+ characters).';
+    return;
   }
+
+  this.isSubmitting = true;
+  this.submitError = '';
+  this.successMessage = '';
+
+  const formData = new FormData();
+  formData.append('title', this.report.title);
+  formData.append('description', this.report.description);
+  formData.append('category', this.report.category);
+  formData.append('priority', this.mapSeverityToPriority(this.report.severity));
+  formData.append('location[latitude]', '15.1474');
+  formData.append('location[longitude]', '120.5957');
+  formData.append('location[address]', `${this.report.houseNumber} ${this.report.street}, ${this.report.barangay}`);
+  formData.append('location[barangay]', this.report.barangay);
+  formData.append('location[city]', 'Angeles City');
+
+  if (this.selectedFile) {
+    formData.append('image', this.selectedFile);
+  }
+
+  // Debug: log what token we have
+  const token = localStorage.getItem('auth_token');
+  console.log('Submitting report, token exists:', !!token);
+  console.log('Form data barangay:', this.report.barangay);
+
+  this.reportService.createReport(formData).subscribe({
+    next: (response: any) => {
+      console.log('Report created:', response);
+      this.isSubmitting = false;
+      this.reportId = response._id || response.id || Date.now().toString();
+      
+      // Show success message
+      this.successMessage = '✅ Report submitted successfully! Thank you for helping keep Malabanias clean.';
+      
+      // Show popup alert
+      alert('🎉 Report submitted successfully!\n\nYour waste report has been filed and will be reviewed by the waste management team.\n\nReport ID: ' + this.reportId);
+      
+      // Reset form after successful submission
+      setTimeout(() => {
+        this.resetForm();
+        this.successMessage = '';
+      }, 3000);
+    },
+    error: (error: any) => {
+      console.error('Report error full object:', error);
+      this.isSubmitting = false;
+      if (error?.status === 0) {
+        this.submitError = 'Cannot reach server. Is the backend running on port 5000?';
+      } else if (error?.status === 401) {
+        this.submitError = 'Session expired. Please log in again.';
+      } else if (error?.status === 400) {
+        const errors = error?.error?.errors;
+        if (errors && errors.length > 0) {
+          this.submitError = errors.map((e: any) => e.msg).join('. ');
+        } else {
+          this.submitError = error?.error?.message || 'Please check all fields.';
+        }
+      } else {
+        this.submitError = error?.error?.message || `Server error (${error?.status}). Try again.`;
+      }
+    }
+  });
+}
 
   private mapSeverityToPriority(severity: string): string {
     if (severity === 'High') return 'URGENT';
@@ -866,8 +882,9 @@ export class ReportForm {
   }
 
   closeModal(): void {
-    this.showSuccessModal = false;
-    this.resetForm();
-    this.router.navigate(['/resident/reports']);
-  }
+  this.showSuccessModal = false;
+  this.resetForm();
+  // Don't navigate - just stay on form so user can submit another
+  // OR navigate to a real reports page once you fix the route
+}
 }

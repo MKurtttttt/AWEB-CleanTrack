@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { WasteReport, WasteCategory, ReportStatus, Priority } from '../models/waste-report.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReportService {
-  private readonly apiUrl = 'http://localhost:5000/api/waste-reports';
+  private readonly apiUrl = `${environment.apiUrl}/waste-reports`;
 
   constructor(private http: HttpClient) {}
 
@@ -34,9 +35,9 @@ export class ReportService {
       .pipe(map((report) => this.normalizeReport(report)));
   }
 
-  updateReportStatus(id: string, status: ReportStatus): Observable<WasteReport | null> {
+  updateReportStatus(reportId: string, status: ReportStatus): Observable<any> {
     return this.http
-      .patch<any>(`${this.apiUrl}/${id}/status`, { status }, { headers: this.authHeaders })
+      .patch<any>(`${this.apiUrl}/${reportId}/status`, { status }, { headers: this.authHeaders })
       .pipe(map((report) => this.normalizeReport(report)));
   }
 

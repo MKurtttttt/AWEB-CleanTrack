@@ -10,6 +10,7 @@ const connectDB = require('./config/database');
 const wasteRoutes = require('./routes/wasteReports');
 const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
+const eventsRoutes = require('./routes/events');
 
 const app = express();
 
@@ -23,15 +24,21 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-production-domain.com'] 
-    : ['http://localhost:4200'],
+    : ['http://localhost:4200', 'http://localhost:4201', 'http://localhost:4202'],
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting - very lenient for development
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 5000, // limit each IP to 5000 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting for SSE endpoints
+  skip: (req) => {
+    return req.url && req.url.includes('/events/');
+  }
 });
 app.use('/api/', limiter);
 
@@ -51,6 +58,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/waste-reports', wasteRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/events', eventsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

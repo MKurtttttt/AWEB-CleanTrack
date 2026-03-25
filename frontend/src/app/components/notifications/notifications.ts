@@ -18,7 +18,11 @@ export class Notifications implements OnInit, OnDestroy {
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit() {
-    this.loadNotifications();
+    // Wait a bit for token to be properly stored before making API calls
+    setTimeout(() => {
+      this.loadNotifications();
+    }, 100);
+    
     // Set up auto-refresh every 30 seconds
     this.refreshSubscription = interval(30000).subscribe(() => {
       this.loadNotifications();
@@ -32,9 +36,17 @@ export class Notifications implements OnInit, OnDestroy {
   }
 
   loadNotifications() {
-    this.notificationService.getNotifications().subscribe(data => {
-      this.notifications = data;
-      this.isLoading = false;
+    this.notificationService.getNotifications().subscribe({
+      next: (data) => {
+        this.notifications = data;
+        this.isLoading = false;
+        console.log('Notifications loaded:', data.length);
+      },
+      error: (error) => {
+        console.error('Error loading notifications:', error);
+        this.isLoading = false;
+        this.notifications = [];
+      }
     });
   }
 
@@ -59,12 +71,12 @@ export class Notifications implements OnInit, OnDestroy {
 
   getNotificationIcon(type: NotificationType): string {
     switch (type) {
-      case 'NEW_REPORT': return '📝';
-      case 'STATUS_UPDATE': return '🔄';
-      case 'ASSIGNMENT': return '👤';
-      case 'RESOLUTION': return '✅';
-      case 'URGENT_ALERT': return '🚨';
-      default: return '📢';
+      case 'NEW_REPORT': return 'NR';
+      case 'STATUS_UPDATE': return 'SU';
+      case 'ASSIGNMENT': return 'AS';
+      case 'RESOLUTION': return '✓';
+      case 'URGENT_ALERT': return '!';
+      default: return 'N';
     }
   }
 }

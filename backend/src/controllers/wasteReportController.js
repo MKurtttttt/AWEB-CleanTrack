@@ -1,13 +1,52 @@
+const mongoose = require('mongoose');
 const WasteReport = require('../models/WasteReport');
+const NotificationService = require('../services/notification.service');
 const Notification = require('../models/Notification');
 
-const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Store SSE connections for real-time updates
+let sseConnections = new Map();
+
+// Function to send real-time notification to all connected clients
+const sendRealtimeNotification = (userId, notification) => {
+  console.log('Sending real-time notification to user:', userId, notification);
+  
+  // In a real implementation, you'd track connections per user
+  // For now, we'll broadcast to all connected clients
+  sseConnections.forEach((connection, connectionId) => {
+    if (connection.userId === userId || !connection.userId) {
+      connection.res.write(`data: ${JSON.stringify({
+        type: 'notification',
+        payload: notification
+      })}\n\n`);
+    }
+  });
+};
+
+// Function to send real-time report update
+const sendRealtimeReportUpdate = (update) => {
+  console.log('Sending real-time report update:', update);
+  
+  // Broadcast to all connected clients
+  sseConnections.forEach((connection, connectionId) => {
+    connection.res.write(`data: ${JSON.stringify({
+      type: 'report_update',
+      payload: update
+    })}\n\n`);
+  });
+};
 
 // @desc    Create a new waste report
 // @route   POST /api/waste-reports
 // @access  Private
 const createWasteReport = async (req, res) => {
   try {
+    console.log('=== CREATE REPORT REQUEST ===');
+    console.log('User:', req.user?.email, 'Role:', req.user?.role);
+    console.log('Body keys:', Object.keys(req.body));
+    console.log('location object:', req.body.location);
+    console.log('location[barangay]:', req.body['location[barangay]']);
+    console.log('File uploaded:', !!req.file);
+    
     const { title, description, category, location, priority } = req.body;
 
     const resolvedLocation = location || {
@@ -18,6 +57,8 @@ const createWasteReport = async (req, res) => {
       city: req.body['location[city]'] || req.body.city
     };
 
+    console.log('Resolved location:', resolvedLocation);
+
     if (
       !resolvedLocation ||
       Number.isNaN(resolvedLocation.latitude) ||
@@ -26,6 +67,14 @@ const createWasteReport = async (req, res) => {
       !resolvedLocation.barangay ||
       !resolvedLocation.city
     ) {
+      console.log('Location validation failed:', {
+        hasLocation: !!resolvedLocation,
+        latValid: !Number.isNaN(resolvedLocation?.latitude),
+        lngValid: !Number.isNaN(resolvedLocation?.longitude),
+        hasAddress: !!resolvedLocation?.address,
+        hasBarangay: !!resolvedLocation?.barangay,
+        hasCity: !!resolvedLocation?.city
+      });
       return res.status(400).json({ message: 'Invalid location payload' });
     }
     
@@ -35,7 +84,7 @@ const createWasteReport = async (req, res) => {
       category,
       location: resolvedLocation,
       priority,
-      reportedBy: req.user.id
+      reportedBy: req.user ? req.user.id : null // Handle anonymous submissions
     });
 
     // Add image URL if file was uploaded
@@ -46,39 +95,84 @@ const createWasteReport = async (req, res) => {
     const savedReport = await wasteReport.save();
     await savedReport.populate('reportedBy', 'name email phone');
 
-    // Create notification for the reporter
-    await Notification.create({
-      userId: req.user.id,
-      title: 'Report Submitted Successfully',
-      message: `Your waste report "${title}" has been submitted successfully.`,
-      type: 'NEW_REPORT',
-      reportId: savedReport._id
-    });
-
-    // Create notifications for all admins and barangay officials
-    const User = require('../models/User');
-    const adminUsers = await User.find({ 
-      role: { $in: ['ADMIN', 'BARANGAY_OFFICIAL'] },
-      $or: [
-        { barangay: { $exists: false } }, // Admins without specific barangay
-        { barangay: resolvedLocation.barangay } // Officials from the same barangay
-      ]
-    }).select('_id');
-
-    for (const admin of adminUsers) {
+    // Create notification for the reporter (only if logged in)
+    if (req.user) {
       await Notification.create({
-        userId: admin._id,
-        title: 'New Waste Report Submitted',
-        message: `A new waste report "${title}" has been submitted in ${resolvedLocation.barangay}.`,
+        userId: req.user.id,
+        title: 'Report Submitted Successfully',
+        message: `Your waste report "${title}" has been submitted successfully.`,
         type: 'NEW_REPORT',
         reportId: savedReport._id
       });
     }
 
-    res.status(201).json(savedReport);
+    // Create notifications for all admins and barangay officials
+    console.log('Creating notifications for admins and officials...');
+    
+    try {
+      // Get all admins and officials to notify
+      const User = mongoose.model('User');
+      const adminsAndOfficials = await User.find({ 
+        role: { $in: ['ADMIN', 'BARANGAY_OFFICIAL', 'WASTE_MANAGEMENT'] }
+      });
+      
+      console.log(`Found ${adminsAndOfficials.length} admins and officials to notify`);
+      
+      if (adminsAndOfficials.length > 0) {
+        // Create notification message for admins/officials
+        const reporterName = req.user ? req.user.name : 'Anonymous';
+        const adminNotificationMessage = `New waste report "${title}" submitted by ${reporterName} in ${savedReport.location?.barangay || 'your area'}. Please review and take action.`;
+        
+        // Create notifications for all admins and officials
+        const adminNotifications = adminsAndOfficials.map(admin => ({
+          userId: admin._id,
+          title: 'New Report Submitted',
+          message: adminNotificationMessage,
+          type: 'NEW_REPORT_ADMIN',
+          reportId: savedReport._id
+        }));
+        
+        console.log(`Creating ${adminNotifications.length} notifications for admins and officials...`);
+        
+        // Insert all notifications at once
+        const result = await Notification.insertMany(adminNotifications);
+        console.log(`✅ Successfully created ${result.length} notifications for admins and officials`);
+        
+        // Send real-time notifications to all connected admins
+        for (const admin of adminsAndOfficials) {
+          sendRealtimeNotification(admin._id, {
+            id: result.find(n => n.userId.toString() === admin._id.toString())?._id,
+            userId: admin._id,
+            title: 'New Report Submitted',
+            message: adminNotificationMessage,
+            type: 'NEW_REPORT_ADMIN',
+            reportId: savedReport._id,
+            read: false,
+            createdAt: new Date()
+          });
+        }
+        
+      } else {
+        console.log('❌ No admins or officials found to notify');
+      }
+      
+    } catch (notificationError) {
+      console.error('❌ Error creating admin notifications:', notificationError);
+      console.error('Error details:', notificationError.message);
+    }
+    
+    res.status(201).json({
+      success: true,
+      message: 'Waste report submitted successfully',
+      data: savedReport
+    });
   } catch (error) {
     console.error('Error creating waste report:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 
@@ -176,60 +270,164 @@ const getWasteReportById = async (req, res) => {
   }
 };
 
-// @desc    Update waste report status
+// @desc    Update report status
 // @route   PATCH /api/waste-reports/:id/status
 // @access  Private (Officials and Admins only)
 const updateReportStatus = async (req, res) => {
   try {
+    console.log('=== UPDATE REPORT STATUS REQUEST START ===');
+    console.log('User:', req.user);
+    console.log('Report ID:', req.params.id);
+    console.log('New Status:', req.body.status);
+    console.log('Request body:', req.body);
+    console.log('Request URL:', req.originalUrl);
+    console.log('Request method:', req.method);
+    
     const { status, rejectionReason, resolutionNotes, estimatedResolution } = req.body;
     
+    // Find the report first
     const report = await WasteReport.findById(req.params.id);
+    console.log('Found report:', report);
     
     if (!report) {
+      console.log('❌ Report not found');
       return res.status(404).json({ message: 'Report not found' });
     }
 
-    // Check permissions
-    if (req.user.role === 'RESIDENT') {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
+    console.log('About to update report status...');
+    
     // Update fields
     report.status = status;
+    console.log('Updated report status to:', status);
     
     if (status === 'REJECTED' && rejectionReason) {
       report.rejectionReason = rejectionReason;
+      console.log('Added rejection reason:', rejectionReason);
     }
     
     if (status === 'RESOLVED' && resolutionNotes) {
       report.resolutionNotes = resolutionNotes;
+      console.log('Added resolution notes:', resolutionNotes);
     }
     
     if (estimatedResolution) {
       report.estimatedResolution = estimatedResolution;
+      console.log('Set estimated resolution:', estimatedResolution);
     }
 
-    // Assign to current user if not already assigned
-    if (!report.assignedTo) {
-      report.assignedTo = req.user.id;
+    // Check permissions - allow residents to update status of their own reports
+    if (req.user.role === 'RESIDENT') {
+      // Residents can only update reports they submitted
+      if (report.reportedBy && report.reportedBy.toString() !== req.user.id) {
+        console.log('❌ Access denied: User trying to update report they did not submit');
+        return res.status(403).json({ message: 'Access denied. You can only update reports you submitted.' });
+      }
+      console.log('✅ Resident allowed to update their own report');
+    } else if (req.user.role !== 'ADMIN' && req.user.role !== 'BARANGAY_OFFICIAL' && req.user.role !== 'WASTE_MANAGEMENT') {
+      console.log('❌ Access denied: User role not authorized for status updates');
+      return res.status(403).json({ message: 'Access denied' });
     }
 
-    const updatedReport = await report.save();
-    await updatedReport.populate('reportedBy', 'name email');
-    await updatedReport.populate('assignedTo', 'name email');
+    console.log('About to save report...');
+    
+    try {
+      const updatedReport = await report.save();
+      console.log('✅ Report saved successfully');
+      await updatedReport.populate('assignedTo', 'name email');
+      await updatedReport.populate('reportedBy', 'name email');
+      console.log('✅ Report populated successfully');
 
-    // Create notification for the reporter
-    await Notification.create({
-      userId: report.reportedBy,
-      title: `Report Status Updated`,
-      message: `Your report "${report.title}" status has been updated to ${status}.`,
-      type: 'STATUS_UPDATE',
-      reportId: report._id
-    });
+      // Create notifications for RESOLVED reports
+      if (status === 'RESOLVED') {
+        console.log('Status is RESOLVED, creating notifications for all residents...');
+        
+        try {
+          // Get all residents to notify
+          const User = mongoose.model('User');
+          const allResidents = await User.find({ role: 'RESIDENT' });
+          
+          console.log(`Found ${allResidents.length} residents to notify`);
+          
+          if (allResidents.length > 0) {
+            // Create community notification message
+            const publicNotificationMessage = `Good news! A waste report "${report.title}" in ${report.location?.barangay || 'your area'} has been resolved. Thank you for helping keep our community clean!`;
+            
+            // Create notifications for all residents
+            const residentNotifications = allResidents.map(resident => ({
+              userId: resident._id,
+              title: 'Community Report Resolved',
+              message: publicNotificationMessage,
+              type: 'COMMUNITY_UPDATE',
+              reportId: report._id
+            }));
+            
+            console.log(`Creating ${residentNotifications.length} notifications for residents...`);
+            
+            // Insert all notifications at once
+            const result = await Notification.insertMany(residentNotifications);
+            console.log(`✅ Successfully created ${result.length} notifications for residents`);
+            
+            // Also create individual notification for the original reporter
+            if (report.reportedBy) {
+              await Notification.create({
+                userId: report.reportedBy,
+                title: 'Your Report Resolved',
+                message: `Your waste report "${report.title}" has been resolved! Thank you for helping keep your community clean.`,
+                type: 'RESOLUTION',
+                reportId: report._id
+              });
+              console.log('✅ Individual notification sent to original reporter');
+            }
+            
+          } else {
+            console.log('❌ No residents found to notify');
+          }
+          
+        } catch (notificationError) {
+          console.error('❌ Error creating notifications:', notificationError);
+          console.error('Error details:', notificationError.message);
+        }
+      } else {
+        console.log('Status is not RESOLVED, skipping notifications');
+      }
 
-    res.json(updatedReport);
+      res.json(updatedReport);
+      console.log('✅ Response sent to client');
+      
+      // Send real-time notification to reporter
+      if (report.reportedBy) {
+        const notification = await Notification.create({
+          userId: report.reportedBy,
+          title: 'Report Status Updated',
+          message: `Your report "${report.title}" has been marked as ${status.toLowerCase()}. Thank you for helping keep Malabanias clean!`,
+          type: 'STATUS_UPDATE',
+          reportId: report._id,
+          read: false,
+          createdAt: new Date()
+        });
+
+        // Send real-time notification
+        sendRealtimeNotification(report.reportedBy, notification);
+      }
+
+      // Send real-time report update to all connected clients
+      sendRealtimeReportUpdate({
+        reportId: report._id,
+        status: status,
+        updatedBy: req.user.id,
+        updatedAt: new Date()
+      });
+      
+    } catch (error) {
+      console.error('❌ Error updating report status:', error);
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
   } catch (error) {
-    console.error('Error updating report status:', error);
+    console.error('❌ Fatal error in updateReportStatus:', error);
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -247,8 +445,13 @@ const assignReport = async (req, res) => {
       return res.status(404).json({ message: 'Report not found' });
     }
 
-    // Check permissions
+    // Check permissions - allow residents to update status of their own reports
     if (req.user.role === 'RESIDENT') {
+      // Residents can only update reports they submitted
+      if (report.reportedBy && report.reportedBy.toString() !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied. You can only update reports you submitted.' });
+      }
+    } else if (req.user.role !== 'ADMIN' && req.user.role !== 'BARANGAY_OFFICIAL' && req.user.role !== 'WASTE_MANAGEMENT') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -362,7 +565,10 @@ const getAdminDashboard = async (req, res) => {
       }
     ]);
 
-    // Recent reports (last 7 days)
+    console.log('Admin dashboard stats aggregation result:', stats);
+    console.log('Match stage for aggregation:', matchStage);
+
+    // Recent reports (last 7 days) - for dashboard display
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -374,6 +580,13 @@ const getAdminDashboard = async (req, res) => {
     .populate('assignedTo', 'name')
     .sort({ createdAt: -1 })
     .limit(10);
+
+    // All reports for dashboard (to show complete picture)
+    const allReports = await WasteReport.find(matchStage)
+      .populate('reportedBy', 'name')
+      .populate('assignedTo', 'name')
+      .sort({ createdAt: -1 })
+      .limit(20);
 
     // Category breakdown
     const categoryStats = await WasteReport.aggregate([
@@ -430,11 +643,17 @@ const getAdminDashboard = async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
+    const finalStats = stats[0] || {
+    total: 0, pending: 0, assigned: 0, inProgress: 0, resolved: 0, rejected: 0, urgent: 0, high: 0
+    };
+    
+    console.log('Final stats being sent:', finalStats);
+    console.log('All reports count:', allReports.length);
+
     res.json({
-      stats: stats[0] || {
-        total: 0, pending: 0, assigned: 0, inProgress: 0, resolved: 0, rejected: 0, urgent: 0, high: 0
-      },
-      recentReports,
+      stats: finalStats,
+      reports: allReports, // All reports for dashboard
+      recentReports, // Recent reports for trends
       categoryStats,
       priorityStats,
       barangayStats,
@@ -518,8 +737,13 @@ const markAsCompleted = async (req, res) => {
       return res.status(404).json({ message: 'Report not found' });
     }
 
-    // Check permissions
+    // Check permissions - allow residents to update status of their own reports
     if (req.user.role === 'RESIDENT') {
+      // Residents can only update reports they submitted
+      if (report.reportedBy && report.reportedBy.toString() !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied. You can only update reports you submitted.' });
+      }
+    } else if (req.user.role !== 'ADMIN' && req.user.role !== 'BARANGAY_OFFICIAL' && req.user.role !== 'WASTE_MANAGEMENT') {
       return res.status(403).json({ message: 'Access denied' });
     }
 

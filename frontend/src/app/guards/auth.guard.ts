@@ -37,11 +37,12 @@ export class AdminGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
+    console.log('=== AdminGuard CHECK ===');
     console.log('AdminGuard: Checking admin access...');
     console.log('AdminGuard: isLoggedIn:', this.authService.isLoggedIn());
+    console.log('AdminGuard: Current user:', this.authService.getCurrentUser());
     console.log('AdminGuard: isAdmin:', this.authService.isAdmin());
     console.log('AdminGuard: isOfficial:', this.authService.isOfficial());
-    console.log('AdminGuard: Current user:', this.authService.getCurrentUser());
     
     if (this.authService.isLoggedIn() && (this.authService.isAdmin() || this.authService.isOfficial())) {
       console.log('AdminGuard: User has admin/official role, allowing access');

@@ -65,7 +65,7 @@ const wasteReportSchema = new mongoose.Schema({
   reportedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false // Allow anonymous submissions
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,

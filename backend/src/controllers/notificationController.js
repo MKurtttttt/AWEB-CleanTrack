@@ -5,21 +5,35 @@ const Notification = require('../models/Notification');
 // @access  Private
 const getNotifications = async (req, res) => {
   try {
+    console.log('=== GET NOTIFICATIONS REQUEST ===');
+    console.log('User ID:', req.user.id);
+    console.log('User Email:', req.user.email);
+    console.log('User Role:', req.user.role);
+    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
+    console.log('Fetching notifications for user:', req.user.id);
+    
     const notifications = await Notification.find({ userId: req.user.id })
       .populate('reportId', 'title status')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
+    console.log('Found notifications:', notifications.length);
+    notifications.forEach((notif, index) => {
+      console.log(`  ${index + 1}. ${notif.title} - ${notif.message} - ${notif.createdAt}`);
+    });
+
     const total = await Notification.countDocuments({ userId: req.user.id });
     const unreadCount = await Notification.countDocuments({ 
       userId: req.user.id, 
       read: false 
     });
+
+    console.log(`Total notifications: ${total}, Unread: ${unreadCount}`);
 
     res.json({
       notifications,
@@ -33,6 +47,36 @@ const getNotifications = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting notifications:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Create test notification for admin
+// @route   POST /api/notifications/test
+// @access  Private
+const createTestNotification = async (req, res) => {
+  try {
+    console.log('=== CREATE TEST NOTIFICATION ===');
+    console.log('User ID:', req.user.id);
+    console.log('User Role:', req.user.role);
+    
+    const testNotification = await Notification.create({
+      userId: req.user.id,
+      title: 'Test Notification',
+      message: 'This is a test notification to verify the system is working.',
+      type: 'TEST',
+      read: false
+    });
+    
+    console.log('✅ Test notification created:', testNotification);
+    
+    res.json({
+      success: true,
+      message: 'Test notification created successfully',
+      notification: testNotification
+    });
+  } catch (error) {
+    console.error('Error creating test notification:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -124,6 +168,7 @@ const getUnreadCount = async (req, res) => {
 
 module.exports = {
   getNotifications,
+  createTestNotification,
   markAsRead,
   markAllAsRead,
   deleteNotification,

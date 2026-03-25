@@ -52,23 +52,40 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    console.log('Login attempt:', { email, passwordProvided: !!password });
 
     // Validate input
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
     // Find user and include password
     const user = await User.findOne({ email }).select('+password');
+    console.log('User found:', !!user);
 
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user) {
+      console.log('User not found for email:', email);
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    console.log('User found, checking password...');
+    const isPasswordValid = await user.comparePassword(password);
+    console.log('Password valid:', isPasswordValid);
+
+    if (!user || !isPasswordValid) {
+      console.log('Invalid credentials - user exists:', !!user, 'password valid:', isPasswordValid);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Check if user is active
     if (!user.isActive) {
+      console.log('User account deactivated');
       return res.status(401).json({ message: 'Account has been deactivated' });
     }
+
+    console.log('Login successful for:', email);
 
     // Update last login
     user.lastLogin = new Date();

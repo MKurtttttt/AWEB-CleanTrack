@@ -96,11 +96,11 @@ export class NavbarComponent {
   }
 
   get dashboardRoute(): string {
-    return this.isAdminView ? '/admin/dashboard' : '/resident';
+    return this.isAdminView ? '/admin/dashboard' : '/resident/dashboard';
   }
 
   get reportsRoute(): string {
-    return this.isAdminView ? '/admin/reports' : '/resident/reports';
+    return this.isAdminView ? '/admin/reports' : '/resident/my-reports';
   }
 
   get mapRoute(): string {

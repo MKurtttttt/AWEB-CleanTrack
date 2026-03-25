@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, Subject, map } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { NotificationType } from '../models/waste-report.model';
+
+export { NotificationType }; // Export for other components
 
 export interface AppNotification {
   id: string;
@@ -18,7 +22,7 @@ export interface AppNotification {
   providedIn: 'root',
 })
 export class NotificationService {
-  private readonly apiUrl = 'http://localhost:5000/api/notifications';
+  private readonly apiUrl = `${environment.apiUrl}/notifications`;
   private notificationSubject = new Subject<AppNotification>();
 
   constructor(private http: HttpClient) {}
@@ -34,27 +38,21 @@ export class NotificationService {
   }
 
   createNotification(
-    userId: string,
     title: string,
     message: string,
     type: NotificationType,
+    userId: string,
     reportId?: string
   ): Observable<AppNotification> {
-    const notification: AppNotification = {
-      id: Date.now().toString(),
-      userId,
-      title,
-      message,
-      type,
-      read: false,
-      createdAt: new Date(),
-      reportId
-    };
-    this.notificationSubject.next(notification);
-    return new Observable((observer) => {
-      observer.next(notification);
-      observer.complete();
-    });
+    return this.http
+      .post<any>(this.apiUrl, {
+        title,
+        message,
+        type,
+        userId,
+        reportId
+      }, { headers: this.authHeaders })
+      .pipe(map((response) => this.normalizeNotification(response)));
   }
 
   markAsRead(notificationId: string): Observable<boolean> {

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { LandingComponent } from './components/landing/landing.component';
+import { NotificationDemoComponent } from './components/notification-demo/notification-demo.component';
 import { AuthGuard, AdminGuard, ResidentGuard } from './guards/auth.guard';
 import { ReportForm } from './components/report-form/report-form';
 import { ReportList } from './components/report-list/report-list';
@@ -11,6 +12,7 @@ export const routes: Routes = [
   { path: 'landing', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'notifications-demo', component: NotificationDemoComponent },
   
   // Admin routes (protected)
   { 
@@ -35,43 +37,42 @@ export const routes: Routes = [
   },
   { 
     path: 'admin/notifications', 
-    loadComponent: () => import('./components/notifications/notifications').then(m => m.Notifications),
+    loadComponent: () => import('./components/admin-notifications/admin-notifications.component').then(m => m.AdminNotificationsComponent),
     canActivate: [AdminGuard]
   },
   
   // Resident routes (protected)
   { 
     path: 'resident', 
-    loadComponent: () => import('./components/report-form/report-form').then(m => m.ReportForm),
-    canActivate: [ResidentGuard]
-  },
-  { 
-    path: 'resident/report', 
-    loadComponent: () => import('./components/report-form/report-form').then(m => m.ReportForm),
-    canActivate: [ResidentGuard]
-  },
-  { 
-    path: 'resident/reports', 
-    redirectTo: '/resident/report',
-    pathMatch: 'full'
-  },
-  { 
-    path: 'resident/map', 
-    loadComponent: () => import('./components/map-view/map-view').then(m => m.MapView),
-    canActivate: [ResidentGuard]
-  },
-  { 
-    path: 'resident/notifications', 
-    loadComponent: () => import('./components/notifications/notifications').then(m => m.Notifications),
-    canActivate: [ResidentGuard]
+    children: [
+      { 
+        path: 'dashboard', 
+        loadComponent: () => import('./components/report-form/report-form').then(m => m.ReportForm),
+        canActivate: [ResidentGuard]
+      }, 
+      { 
+        path: 'report', 
+        loadComponent: () => import('./components/report-form/report-form').then(m => m.ReportForm),
+        canActivate: [ResidentGuard]
+      }, 
+      { 
+        path: 'my-reports', 
+        loadComponent: () => import('./components/report-list/report-list').then(m => m.ReportList),
+        canActivate: [ResidentGuard]
+      },
+      { 
+        path: 'map', 
+        loadComponent: () => import('./components/map-view/map-view').then(m => m.MapView),
+        canActivate: [ResidentGuard]
+      },
+      { 
+        path: 'notifications', 
+        loadComponent: () => import('./components/notifications/notifications').then(m => m.Notifications),
+        canActivate: [ResidentGuard]
+      }
+    ]
   },
   
-  // Legacy routes (redirect to new structure)
-  { path: 'report', redirectTo: '/resident/report', pathMatch: 'full' },
-  { path: 'dashboard', redirectTo: '/admin/dashboard', pathMatch: 'full' },
-  { path: 'map', redirectTo: '/admin/map', pathMatch: 'full' },
-  { path: 'reports', redirectTo: '/resident/reports', pathMatch: 'full' },
-  { path: 'notifications', redirectTo: '/resident/notifications', pathMatch: 'full' },
-  
+  // Catch-all route (must be last)
   { path: '**', redirectTo: '/landing' }
 ];

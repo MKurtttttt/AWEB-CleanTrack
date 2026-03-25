@@ -38,7 +38,31 @@ const validateAssignment = [
 ];
 
 // Routes
-router.post('/', auth, upload.single('image'), validateWasteReport, createWasteReport);
+// Public route for anonymous reporting
+router.post('/public', upload.single('image'), validateWasteReport, (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('Validation errors:', errors.array());
+    return res.status(400).json({ 
+      message: 'Validation failed', 
+      errors: errors.array() 
+    });
+  }
+  next();
+}, createWasteReport);
+
+// Protected routes (require authentication)
+router.post('/', auth, upload.single('image'), validateWasteReport, (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('Validation errors:', errors.array());
+    return res.status(400).json({ 
+      message: 'Validation failed', 
+      errors: errors.array() 
+    });
+  }
+  next();
+}, createWasteReport);
 router.get('/', auth, getWasteReports);
 router.get('/stats', auth, getReportStats);
 router.get('/admin/dashboard', auth, authorize('ADMIN', 'BARANGAY_OFFICIAL', 'WASTE_MANAGEMENT'), getAdminDashboard);
