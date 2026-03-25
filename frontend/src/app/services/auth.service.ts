@@ -35,7 +35,7 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = `${environment.apiUrl}/users`;
+  private readonly apiUrl = `${this.getApiUrl()}/users`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private tokenKey = 'auth_token';
 
@@ -46,8 +46,36 @@ export class AuthService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     console.log('AuthService: Initializing...');
-    this.loadUserFromStorage();
-    console.log('AuthService: Initialization complete, current user:', this.getCurrentUser());
+    console.log('AuthService: Loading user from storage...');
+    
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem(this.tokenKey);
+      console.log('AuthService: Token found:', !!token);
+      
+      if (token) {
+        try {
+          // Simple token decode for now - in production, you'd want proper JWT validation
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const user: User = {
+            id: payload.id,
+            name: payload.name,
+            email: payload.email,
+            phone: payload.phone,
+            role: payload.role,
+            barangay: payload.barangay
+          };
+          this.currentUserSubject.next(user);
+          console.log('AuthService: User loaded from token:', user?.email);
+        } catch (error) {
+          console.log('AuthService: Invalid token, removing it');
+          localStorage.removeItem(this.tokenKey);
+        }
+      } else {
+        console.log('AuthService: No token found in storage');
+      }
+    }
+    
+    console.log('AuthService: Initialization complete, current user:', this.currentUserSubject.value);
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
@@ -114,39 +142,16 @@ export class AuthService {
     return user?.role === 'RESIDENT';
   }
 
-  private loadUserFromStorage(): void {
-    console.log('AuthService: Loading user from storage...');
-    if (isPlatformBrowser(this.platformId)) {
-      const token = this.getToken();
-      console.log('AuthService: Token found:', !!token);
-      
-      if (token) {
-        // For now, we'll store user info in localStorage along with token
-        const userInfo = localStorage.getItem('current_user');
-        console.log('AuthService: User info from storage:', userInfo);
-        
-        if (userInfo) {
-          try {
-            const user = JSON.parse(userInfo);
-            console.log('AuthService: Parsed user:', user);
-            console.log('AuthService: User role:', user.role);
-            this.currentUserSubject.next(user);
-            console.log('AuthService: User subject updated');
-          } catch (error) {
-            console.error('AuthService: Error parsing user info:', error);
-            this.logout();
-          }
-        } else {
-          console.log('AuthService: No user info found in storage, but token exists');
-          // Token exists but no user info - this might be a session issue
-          this.logout();
-        }
-      } else {
-        console.log('AuthService: No token found in storage');
-      }
-    } else {
-      console.log('AuthService: Not in browser platform, skipping storage load');
+  private getApiUrl(): string {
+    // Check if we're in production and use fallback if needed
+    if (typeof window !== 'undefined' && 
+        window.location.hostname !== 'localhost' && 
+        window.location.hostname !== '127.0.0.1') {
+      // Production environment - use Render backend
+      return 'https://aweb-cleantrack.onrender.com/api';
     }
+    // Development environment - use environment file
+    return environment.apiUrl;
   }
 
   // Helper method to store user info
